@@ -65,21 +65,85 @@ export function htmlToDocOps(html) {
   return ops;
 }
 
-// A block row summarizes the source block for the Doc: one row per
-// "column" the block library defines. Until per-block extractors land
-// (Task 8/9), rows carry the block's text content and first image.
+// Per-block extractors: turn a block element into structured table rows,
+// one row per item the block renders (card, column, accordion entry...).
+// This is what keeps block-internal content out of the review pass.
+const text = (el) => (el?.text || '').replace(/\s+/g, ' ').trim();
+
+function imgOf(el) {
+  const img = el.querySelector('img');
+  if (img) return img.getAttribute('data-src') || img.getAttribute('src') || '';
+  const source = el.querySelector('source');
+  if (source) {
+    const set = source.getAttribute('data-srcset') || source.getAttribute('srcset') || '';
+    return set.split(',')[0].trim().split(/\s+/)[0] || '';
+  }
+  return '';
+}
+
+function linkOf(el) {
+  const a = el.querySelector('a[href]');
+  return a ? a.getAttribute('href') : '';
+}
+
+const EXTRACTORS = {
+  hero: (el) => [[imgOf(el), text(el.querySelector('h1, h2')), text(el.querySelector('p')), linkOf(el)].filter((v) => v !== '')],
+  'content-block': (el) => [[imgOf(el), text(el.querySelector('h1, h2, h3')), text(el.querySelector('p')), linkOf(el)].filter((v) => v !== '')],
+  columns: (el) => [...el.querySelectorAll('[class*="column"]')].map((col) => [
+    imgOf(col), text(col.querySelector('h3, h2')), text(col.querySelector('p')), linkOf(col),
+  ].filter((v) => v !== '')),
+  cards: (el) => [...el.querySelectorAll('[class*="card"], [class*="item"], [class*="story"]')].map((card) => [
+    imgOf(card), text(card.querySelector('h3, h2')), text(card.querySelector('p')), linkOf(card),
+  ].filter((v) => v !== '')),
+  accordion: (el) => [...el.querySelectorAll('[class*="item"], [class*="accordion"]')].map((item) => [
+    text(item.querySelector('h3, h2, h4, summary')), text(item.querySelector('p, div:not(:has(h3))')),
+  ].filter((v) => v !== '')),
+  title: (el) => [[text(el.querySelector('h1, h2, h3'))]],
+  quote: (el) => {
+    const paras = [...el.querySelectorAll('p')].map(text).filter(Boolean);
+    return [paras.length > 1 ? [paras[0], paras[paras.length - 1]] : [paras[0] || '']];
+  },
+  statistics: (el) => [...el.querySelectorAll('[class*="stat"], [class*="item"]')].map((stat) => {
+    const paras = [...stat.querySelectorAll('p')].map(text);
+    return [paras[0] || '', paras[1] || ''];
+  }),
+  'related-links': (el) => [...el.querySelectorAll('a[href]')].map((a) => [text(a), a.getAttribute('href')]),
+  'download-list': (el) => [...el.querySelectorAll('a[href]')].map((a) => [text(a), a.getAttribute('href')]),
+  buttons: (el) => [...el.querySelectorAll('a[href]')].map((a) => [text(a), a.getAttribute('href')]),
+  'contact-banner': (el) => [[imgOf(el), text(el.querySelector('h1, h2, h3')), text(el.querySelector('p')), linkOf(el)].filter((v) => v !== '')],
+  'bio-highlights': (el) => [...el.querySelectorAll('[class*="bio"], [class*="item"]')].map((bio) => [
+    imgOf(bio), text(bio.querySelector('h3, h2')), text(bio.querySelector('p')),
+  ].filter((v) => v !== '')),
+  tabs: (el) => [...el.querySelectorAll('[class*="tab"]')].map((tab) => [text(tab.querySelector('h3, h2, [role="tab"]')), text(tab.querySelector('p'))]),
+  'article-images': (el) => [...el.querySelectorAll('img, picture')].map((img) => [imgOf(img.parentElement || img)]),
+  video: (el) => [[imgOf(el), text(el.querySelector('h1, h2, h3')), linkOf(el)].filter((v) => v !== '')],
+  slideshow: (el) => [...el.querySelectorAll('img, picture')].map((img) => [imgOf(img.parentElement || img)]),
+  listicle: (el) => [...el.querySelectorAll('li')].map((li) => [text(li)]),
+  'bento-box': (el) => [...el.querySelectorAll('[class*="cell"], [class*="item"], [class*="box"]')].map((cell) => [
+    imgOf(cell), text(cell.querySelector('h3, h2')), text(cell.querySelector('p')), linkOf(cell),
+  ].filter((v) => v !== '')),
+  timeline: (el) => [...el.querySelectorAll('[class*="year"], [class*="item"]')].map((item) => [
+    text(item.querySelector('h3, h2, [class*="year"]')), text(item.querySelector('p')),
+  ].filter((v) => v !== '')),
+  'vertical-scroll': (el) => [...el.querySelectorAll('section, [class*="section"]')].map((s) => [
+    text(s.querySelector('h3, h2')), text(s.querySelector('p')),
+  ].filter((v) => v !== '')),
+  modal: (el) => [[text(el.querySelector('h1, h2, h3')), text(el.querySelector('p'))].filter((v) => v !== '')],
+};
+
 function blockToRows(el, name) {
-  const img = firstImage(el);
-  const heading = el.querySelector('h1, h2, h3, h4');
-  const text = (el.text || '').replace(/\s+/g, ' ').trim().slice(0, 500);
-  const link = el.querySelector('a[href]');
-  const row = [];
-  if (img) row.push(img.src);
-  if (heading) row.push(heading.text.trim());
-  if (text) row.push(text);
-  const href = link?.getAttribute('href');
-  if (href) row.push(href);
-  return row.length ? [row] : [[el.text.trim().slice(0, 200) || ' ']];
+  const extract = EXTRACTORS[name];
+  if (extract) {
+    const rows = extract(el).filter((row) => row.some((v) => v !== ''));
+    if (rows.length) return rows;
+  }
+  // Fallback for blocks without an extractor: single summary row.
+  const img = imgOf(el);
+  const heading = text(el.querySelector('h1, h2, h3, h4'));
+  const body = text(el).slice(0, 500);
+  const href = linkOf(el);
+  const row = [img, heading, body, href].filter((v) => v !== '');
+  return [row.length ? row : [' ']];
 }
 
 export function convertPage(page) {

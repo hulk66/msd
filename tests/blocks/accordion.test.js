@@ -13,4 +13,13 @@ describe('accordion', () => {
     expect(items[0].querySelector('.accordion-item-body').textContent).toBe('A1');
     expect(items[1].querySelector('summary').textContent).toBe('Q2');
   });
+  it('handles EDS table-shaped rows: first cell is question, rest is answer', () => {
+    const el = document.createElement('div');
+    el.innerHTML = '<div><div>Q1</div><div>A1</div></div><div><div>Q2</div><div>A2</div></div>';
+    const block = buildAccordion(el);
+    const items = block.querySelectorAll('details');
+    expect(items[0].querySelector('summary').textContent).toBe('Q1');
+    expect(items[0].querySelector('.accordion-item-body').textContent).toBe('A1');
+    expect(items[1].querySelector('summary').textContent).toBe('Q2');
+  });
 });

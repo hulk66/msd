@@ -25,4 +25,11 @@ describe('hero block', () => {
     expect(block.querySelector('.hero-picture')).toBe(null);
     expect(block.querySelector('.hero-copy h1').textContent).toBe('Text only');
   });
+  it('preserves variant classes (full, negative)', () => {
+    const el = document.createElement('div');
+    el.className = 'hero full';
+    el.innerHTML = '<h1>T</h1>';
+    const block = buildHeroBlock(el);
+    expect(block.classList.contains('full')).toBe(true);
+  });
 });

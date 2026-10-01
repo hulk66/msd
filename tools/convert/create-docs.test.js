@@ -1,29 +1,51 @@
 import { describe, it, expect } from 'vitest';
-import { docModelToRequests, planSync } from './create-docs.js';
+import { buildDocPlan, planSync } from './create-docs.js';
 
-describe('docModelToRequests', () => {
-  it('emits title, metadata, blocks and plain ops in order', () => {
-    const model = {
-      slug: 'about', title: 'About', description: 'd',
-      sections: [
-        { blocks: [{ name: 'hero', variant: ['full'], rows: [['Headline', 'Sub']] }], plain: [], metadata: {} },
-        { blocks: [], plain: [{ type: 'heading', level: 2, text: 'Sec' }, { type: 'paragraph', text: 'Body' }], metadata: {} },
-      ],
-    };
-    const reqs = docModelToRequests(model);
-    const text = reqs.filter((r) => r.insertText).map((r) => r.insertText.text).join('');
-    expect(text).toContain('About');
-    expect(text).toContain('hero (full)');
-    expect(text).toContain('Sec');
-    expect(text).toContain('Body');
+const model = {
+  slug: 'about', title: 'About', description: 'd',
+  sections: [
+    {
+      blocks: [{ name: 'hero', variant: ['full'], rows: [['img.jpg', 'Headline', 'Sub', '/x']] }],
+      plain: [{ type: 'paragraph', text: 'Body text' }],
+      metadata: { style: 'dark' },
+    },
+    {
+      blocks: [{ name: 'cards', variant: [], rows: [['a.jpg', 'A', 'da', '/a'], ['b.jpg', 'B', 'db', '/b']] }],
+      plain: [{ type: 'image', src: 'pic.jpg', alt: 'Pic' }],
+      metadata: {},
+    },
+  ],
+};
+
+describe('buildDocPlan (C1: real EDS block tables, I1: images, I2: metadata)', () => {
+  const plan = buildDocPlan(model);
+
+  it('emits page metadata as a key/value table EDS reads', () => {
+    const meta = plan.find((s) => s.type === 'table' && s.rows.some((r) => r[0] === 'title'));
+    expect(meta).toBeTruthy();
+    expect(meta.rows.some((r) => r[0] === 'description')).toBe(true);
   });
-  it('renders block rows as a table request', () => {
-    const model = {
-      slug: 'a', title: 'A', description: '',
-      sections: [{ blocks: [{ name: 'cards', variant: [], rows: [['img|Title|Desc|Link']] }], plain: [], metadata: {} }],
-    };
-    const reqs = docModelToRequests(model);
-    expect(reqs.some((r) => r.createTableRequest)).toBe(true);
+
+  it('emits one table per block with header row = block name + variants', () => {
+    const hero = plan.find((s) => s.type === 'table' && s.header === 'hero (full)');
+    expect(hero).toBeTruthy();
+    expect(hero.rows).toEqual([['img.jpg', 'Headline', 'Sub', '/x']]);
+    const cards = plan.find((s) => s.type === 'table' && s.header === 'cards');
+    expect(cards.rows.length).toBe(2); // C3: one row per card, not mushed
+  });
+
+  it('emits images as inline image steps, not text placeholders', () => {
+    expect(plan.some((s) => s.type === 'image' && s.url === 'pic.jpg' && s.alt === 'Pic')).toBe(true);
+    expect(plan.some((s) => s.type === 'text' && s.text.includes('[image:'))).toBe(false);
+  });
+
+  it('emits section metadata tables and preserves section order', () => {
+    const idx = (pred) => plan.findIndex(pred);
+    const bodyText = idx((s) => s.type === 'text' && s.text.includes('Body text'));
+    const cardsTable = idx((s) => s.type === 'table' && s.header === 'cards');
+    expect(cardsTable).toBeGreaterThan(bodyText); // section 2 after section 1 content
+    const styleRow = plan.find((s) => s.type === 'table' && s.rows.some((r) => r[0] === 'style'));
+    expect(styleRow).toBeTruthy();
   });
 });
 

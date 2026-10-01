@@ -4,8 +4,9 @@
  * @param {Element} block The hero block element
  */
 export function buildHeroBlock(block) {
+  const variant = [...block.classList].filter((c) => c !== 'hero' && c !== 'block');
   const rebuilt = document.createElement('div');
-  rebuilt.className = 'hero block';
+  rebuilt.className = `hero block ${variant.join(' ')}`.trim();
 
   const picture = block.querySelector('picture');
   if (picture) {

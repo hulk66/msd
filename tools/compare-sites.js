@@ -11,10 +11,22 @@ export function diffUrlSets(wpUrls, edsUrls, wpBase, edsBase) {
 }
 
 async function fetchSitemapUrls(baseUrl) {
-  const res = await fetch(`${baseUrl.replace(/\/$/, '')}/sitemap.xml`);
-  if (!res.ok) return [];
+  let res;
+  try {
+    res = await fetch(`${baseUrl.replace(/\/$/, '')}/sitemap.xml`);
+  } catch (err) {
+    throw new Error(`sitemap fetch failed for ${baseUrl}: ${err.message}`);
+  }
+  if (!res.ok) {
+    // A missing sitemap must never look like a clean comparison (I5).
+    throw new Error(`sitemap fetch failed for ${baseUrl}: HTTP ${res.status}`);
+  }
   const xml = await res.text();
-  return [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+  const urls = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
+  if (!urls.length) {
+    throw new Error(`sitemap at ${baseUrl} parsed to zero URLs — refusing to report clean`);
+  }
+  return urls;
 }
 
 export async function compareSites({ wpBase, edsBase, outDir = 'report' } = {}) {

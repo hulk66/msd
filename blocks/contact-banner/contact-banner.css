@@ -1,0 +1,34 @@
+.contact-banner {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: var(--spacing-section) 48px;
+  align-items: center;
+  padding: var(--spacing-section) 24px;
+  max-width: var(--width-content);
+  margin: 0 auto;
+  background-color: var(--color-surface-alt);
+}
+
+.contact-banner .cb-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.contact-banner h2 {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-h2);
+  line-height: var(--line-height-h2);
+  margin: 0 0 12px;
+}
+
+.contact-banner a:any-link {
+  color: var(--color-brand-primary);
+  font-weight: var(--font-weight-link);
+}
+
+@media (width < 768px) {
+  .contact-banner {
+    grid-template-columns: 1fr;
+  }
+}
