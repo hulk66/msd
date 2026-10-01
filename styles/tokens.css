@@ -1,0 +1,38 @@
+:root {
+  /* Colors — extracted from msd.com computed styles and theme CSS */
+  --color-background: #fff;
+  --color-text: #000;
+  --color-text-muted: #757575;
+  --color-brand-primary: #00857c; /* link teal */
+  --color-brand-primary-hover: #014c54;
+  --color-brand-dark: #0c2340; /* navy bands */
+  --color-brand-darker: #051f42;
+  --color-surface-alt: #f3f2f0; /* off-white band */
+  --color-surface-gray: #cfd2d7;
+  --color-highlight: #fff063;
+  --color-error: #fe0000;
+  --color-accent: #bfed33;
+
+  /* Type — Invention substituted with Inter (see fonts/LICENSE.md) */
+  --font-family-body: 'Inter', sans-serif;
+  --font-family-heading: 'Inter', sans-serif;
+  --font-size-body: 1rem; /* 16px */
+  --font-weight-body: 400;
+  --font-size-h2: 2.875rem; /* 46px */
+  --font-weight-h2: 300;
+  --line-height-h2: 3.75rem; /* 60px */
+  --font-size-h3: 1.125rem; /* 18px */
+  --font-weight-h3: 700;
+  --line-height-h3: 1.75rem; /* 28px */
+  --font-size-link: 1rem;
+  --font-weight-link: 700;
+  --font-size-button: 1.25rem; /* 20px */
+  --font-weight-button: 700;
+
+  /* Spacing & breakpoints — from theme mt/mb rhythm and media queries */
+  --spacing-section: 2rem; /* mt-2/mb-2 = 2rem rhythm between blocks */
+  --spacing-block-inner: 1rem; /* mt-1/mb-1 */
+  --width-content: 1200px; /* desktop container width from theme breakpoints */
+  --breakpoint-tablet: 768px; /* theme mobile breakpoint */
+  --breakpoint-desktop: 1200px; /* theme desktop breakpoint */
+}

@@ -10,46 +10,50 @@
  * governing permissions and limitations under the License.
  */
 
+/* msd.com design tokens — extracted values, see styles/tokens.css */
+@import url('./tokens.css');
+
 :root {
   /* colors */
-  --background-color: white;
-  --light-color: #f8f8f8;
-  --dark-color: #505050;
-  --text-color: #131313;
-  --link-color: #3b63fb;
-  --link-hover-color: #1d3ecf;
+  --background-color: var(--color-background);
+  --light-color: var(--color-surface-alt);
+  --dark-color: var(--color-brand-dark);
+  --text-color: var(--color-text);
+  --link-color: var(--color-brand-primary);
+  --link-hover-color: var(--color-brand-primary-hover);
 
   /* fonts */
-  --body-font-family: roboto, roboto-fallback, sans-serif;
-  --heading-font-family: roboto-condensed, roboto-condensed-fallback, sans-serif;
+  --body-font-family: inter, inter-fallback, sans-serif;
+  --heading-font-family: inter, inter-fallback, sans-serif;
 
   /* body sizes */
-  --body-font-size-m: 22px;
-  --body-font-size-s: 19px;
-  --body-font-size-xs: 17px;
+  --body-font-size-m: 16px;
+  --body-font-size-s: 14px;
+  --body-font-size-xs: 13px;
 
   /* heading sizes */
-  --heading-font-size-xxl: 55px;
-  --heading-font-size-xl: 44px;
+  --heading-font-size-xxl: 46px;
+  --heading-font-size-xl: 40px;
   --heading-font-size-l: 34px;
   --heading-font-size-m: 27px;
   --heading-font-size-s: 24px;
-  --heading-font-size-xs: 22px;
+  --heading-font-size-xs: 18px;
 
   /* nav height */
   --nav-height: 64px;
 }
 
-/* fallback fonts */
+/* self-hosted Inter (substitute for Invention — see fonts/LICENSE.md) */
 @font-face {
-  font-family: roboto-condensed-fallback;
-  size-adjust: 88.82%;
-  src: local('Arial');
+  font-family: inter;
+  src: url('../fonts/inter-variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-display: swap;
 }
 
 @font-face {
-  font-family: roboto-fallback;
-  size-adjust: 99.529%;
+  font-family: inter-fallback;
+  size-adjust: 99%;
   src: local('Arial');
 }
 
