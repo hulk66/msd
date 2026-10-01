@@ -1,0 +1,12 @@
+.title {
+  max-width: var(--width-content);
+  margin: 0 auto;
+  padding: var(--spacing-section) 24px 0;
+}
+
+.title h2 {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-h2);
+  line-height: var(--line-height-h2);
+  margin: 0;
+}

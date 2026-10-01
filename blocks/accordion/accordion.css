@@ -1,0 +1,39 @@
+.accordion {
+  max-width: var(--width-content);
+  margin: 0 auto;
+  padding: var(--spacing-section) 24px;
+}
+
+.accordion details {
+  border-bottom: 1px solid var(--color-surface-gray);
+}
+
+.accordion summary {
+  cursor: pointer;
+  padding: 16px 0;
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-h3);
+  list-style: none;
+  position: relative;
+}
+
+.accordion summary::-webkit-details-marker {
+  display: none;
+}
+
+.accordion summary::after {
+  content: '+';
+  position: absolute;
+  right: 0;
+  color: var(--color-brand-primary);
+  font-size: 1.5rem;
+}
+
+.accordion details[open] summary::after {
+  content: '−';
+}
+
+.accordion .accordion-item-body {
+  padding: 0 0 16px;
+  color: var(--color-text);
+}

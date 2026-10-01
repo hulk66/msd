@@ -1,18 +1,19 @@
-export default function decorate(block) {
-  const cols = [...block.firstElementChild.children];
-  block.classList.add(`columns-${cols.length}-cols`);
-
-  // setup image columns
-  [...block.children].forEach((row) => {
-    [...row.children].forEach((col) => {
-      const pic = col.querySelector('picture');
-      if (pic) {
-        const picWrapper = pic.closest('div');
-        if (picWrapper && picWrapper.children.length === 1) {
-          // picture is only content in column
-          picWrapper.classList.add('columns-img-col');
-        }
-      }
-    });
+/**
+ * msd.com columns: one .col per source row.
+ * @param {Element} block The columns block element
+ */
+export function buildColumns(block) {
+  const rebuilt = document.createElement('div');
+  rebuilt.className = 'columns block';
+  [...block.children].forEach((child) => {
+    const col = document.createElement('div');
+    col.className = 'col';
+    while (child.firstElementChild) col.append(child.firstElementChild);
+    rebuilt.append(col);
   });
+  return rebuilt;
+}
+
+export default async function decorate(block) {
+  block.replaceWith(buildColumns(block));
 }

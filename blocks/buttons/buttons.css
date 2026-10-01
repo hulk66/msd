@@ -1,0 +1,22 @@
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: var(--spacing-section) 24px;
+  max-width: var(--width-content);
+  margin: 0 auto;
+}
+
+.buttons a.button:any-link {
+  background-color: var(--color-brand-primary);
+  color: #fff;
+  font-size: var(--font-size-button);
+  font-weight: var(--font-weight-button);
+  padding: 12px 24px;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+.buttons a.button:any-link:hover {
+  background-color: var(--color-brand-primary-hover);
+}

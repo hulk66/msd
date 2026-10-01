@@ -1,0 +1,21 @@
+.statistics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-section) 32px;
+  padding: var(--spacing-section) 24px;
+  max-width: var(--width-content);
+  margin: 0 auto;
+  text-align: center;
+}
+
+.statistics .stat-number {
+  font-size: 3.5rem;
+  font-weight: var(--font-weight-h2);
+  color: var(--color-brand-primary);
+  line-height: 1.1;
+}
+
+.statistics .stat-label {
+  font-size: var(--font-size-body);
+  color: var(--color-text-muted);
+}

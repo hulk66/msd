@@ -1,0 +1,26 @@
+.related-links {
+  max-width: var(--width-content);
+  margin: 0 auto;
+  padding: var(--spacing-section) 24px;
+}
+
+.related-links ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.related-links li {
+  border-bottom: 1px solid var(--color-surface-gray);
+  padding: 12px 0;
+}
+
+.related-links a:any-link {
+  color: var(--color-brand-primary);
+  font-weight: var(--font-weight-link);
+  text-decoration: none;
+}
+
+.related-links a:hover {
+  text-decoration: underline;
+}
