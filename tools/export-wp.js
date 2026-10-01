@@ -7,11 +7,14 @@ export function extractSlug(page) {
 
 export function collectImageUrls(html) {
   const urls = [];
-  for (const m of html.matchAll(/(?:data-src|src)="([^"]+)"/g)) urls.push(m[1]);
-  for (const m of html.matchAll(/(?:data-srcset|srcset)="([^"]+)"/g)) {
-    for (const part of m[1].split(',')) {
-      const url = part.trim().split(/\s+/)[0];
-      if (url) urls.push(url);
+  for (const m of html.matchAll(/(?:data-srcset|srcset|data-src|src)="([^"]+)"/g)) {
+    if (/srcset/.test(m[0])) {
+      for (const part of m[1].split(',')) {
+        const url = part.trim().split(/\s+/)[0];
+        if (url) urls.push(url);
+      }
+    } else {
+      urls.push(m[1]);
     }
   }
   return [...new Set(urls)];

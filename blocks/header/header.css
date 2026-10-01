@@ -146,6 +146,7 @@ header .nav-brand {
 header nav .nav-brand img {
   width: 128px;
   height: auto;
+  max-height: 40px;
 }
 
 /* sections */
@@ -273,10 +274,6 @@ header nav .nav-tools {
 }
 
 /* msd.com branding overrides (1:1 with masthead-country-1 theme) */
-header nav {
-  max-width: var(--width-content);
-}
-
 header nav .nav-sections a:any-link {
   color: var(--color-text);
   font-size: var(--font-size-body);
@@ -289,12 +286,8 @@ header nav .nav-sections [aria-expanded='true'] > a {
   color: var(--color-brand-primary);
 }
 
-header nav .nav-sections .nav-drop ul {
+header nav .nav-sections .nav-drop > ul {
   border-top: 3px solid var(--color-brand-primary);
-}
-
-header nav .nav-brand img {
-  max-height: 40px;
 }
 
 header nav .nav-tools a:any-link {
