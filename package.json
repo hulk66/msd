@@ -33,6 +33,7 @@
   },
   "type": "module",
   "dependencies": {
+    "googleapis": "^182.0.0",
     "node-html-parser": "^9.0.4"
   }
 }
