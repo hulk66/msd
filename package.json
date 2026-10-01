@@ -31,5 +31,8 @@
     "stylelint-config-standard": "40.0.0",
     "vitest": "^2.1.9"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "node-html-parser": "^9.0.4"
+  }
 }
