@@ -30,5 +30,6 @@
     "stylelint": "17.15.0",
     "stylelint-config-standard": "40.0.0",
     "vitest": "^2.1.9"
-  }
+  },
+  "type": "module"
 }
