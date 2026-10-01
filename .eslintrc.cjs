@@ -4,6 +4,8 @@ module.exports = {
   env: {
     browser: true,
   },
+  // tools/ and tests/ are Node migration scripts, not served site code
+  ignorePatterns: ['tools/', 'tests/'],
   parser: '@babel/eslint-parser',
   parserOptions: {
     allowImportExportEverywhere: true,
