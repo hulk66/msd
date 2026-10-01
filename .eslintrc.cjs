@@ -4,8 +4,8 @@ module.exports = {
   env: {
     browser: true,
   },
-  // tools/ and tests/ are Node migration scripts, not served site code
-  ignorePatterns: ['tools/', 'tests/'],
+  // tools/, tests/, and vitest config are Node migration scripts, not served site code
+  ignorePatterns: ['tools/', 'tests/', 'vitest.config.js'],
   parser: '@babel/eslint-parser',
   parserOptions: {
     allowImportExportEverywhere: true,
