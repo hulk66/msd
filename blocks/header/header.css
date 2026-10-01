@@ -271,3 +271,33 @@ header nav .nav-sections .nav-drop > button[aria-expanded='false'] + ul {
 header nav .nav-tools {
   grid-area: tools;
 }
+
+/* msd.com branding overrides (1:1 with masthead-country-1 theme) */
+header nav {
+  max-width: var(--width-content);
+}
+
+header nav .nav-sections a:any-link {
+  color: var(--color-text);
+  font-size: var(--font-size-body);
+  font-weight: 400;
+  text-decoration: none;
+}
+
+header nav .nav-sections a:hover,
+header nav .nav-sections [aria-expanded='true'] > a {
+  color: var(--color-brand-primary);
+}
+
+header nav .nav-sections .nav-drop ul {
+  border-top: 3px solid var(--color-brand-primary);
+}
+
+header nav .nav-brand img {
+  max-height: 40px;
+}
+
+header nav .nav-tools a:any-link {
+  color: var(--color-brand-primary);
+  font-weight: var(--font-weight-link);
+}
