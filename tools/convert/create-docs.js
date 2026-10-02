@@ -114,23 +114,47 @@ export async function executePlan(plan, documentId, docs) {
         }
       }
     } else if (step.type === 'image') {
-      await docs.documents.batchUpdate({
-        documentId,
-        requestBody: {
-          requests: [{
-            insertInlineImage: {
-              uri: step.url,
-              objectSize: { height: { magnitude: 200, unit: 'PT' } },
-              location: { index: at },
-            },
-          }],
-        },
-      });
+      try {
+        await docs.documents.batchUpdate({
+          documentId,
+          requestBody: {
+            requests: [{
+              insertInlineImage: {
+                uri: step.url,
+                objectSize: { height: { magnitude: 200, unit: 'PT' } },
+                location: { index: at },
+              },
+            }],
+          },
+        });
+      } catch (err) {
+        // Some source images aren't fetchable by Google (relative URLs,
+        // hotlink protection). Best-effort: leave a link instead of failing
+        // the whole doc; the review pass can re-insert these.
+        await docs.documents.batchUpdate({
+          documentId,
+          requestBody: { requests: [{ insertText: { location: { index: at }, text: `[image: ${step.url}]` } }] },
+        });
+      }
     }
   }
 }
 
-export async function syncDocs(models, { folderId, docs: docsOverride, drive: driveOverride, mappingFile = MAPPING_FILE } = {}) {
+// Wraps a Docs client so write batchUpdates respect the API's write quota
+// (60 writes/min/user). Reads are unthrottled.
+export function throttleDocs(docs, minIntervalMs = 1100) {
+  let last = 0;
+  const orig = docs.documents.batchUpdate.bind(docs.documents);
+  docs.documents.batchUpdate = async (...args) => {
+    const wait = last + minIntervalMs - Date.now();
+    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+    last = Date.now();
+    return orig(...args);
+  };
+  return docs;
+}
+
+export async function syncDocs(models, { folderId, docs: docsOverride, drive: driveOverride, mappingFile = MAPPING_FILE, skipExisting = false } = {}) {
   let docs = docsOverride;
   let drive = driveOverride;
   if (!docs || !drive) {
@@ -143,6 +167,7 @@ export async function syncDocs(models, { folderId, docs: docsOverride, drive: dr
   const mapping = loadMapping(mappingFile);
 
   for (const model of models) {
+    if (skipExisting && mapping[model.slug]) continue; // resume: already synced
     const plan = planSync(model, mapping);
     if (plan.action === 'update') {
       // The Docs API has no deleteTable request, so a doc containing tables
@@ -171,7 +196,10 @@ if (process.argv[1] && process.argv[1].endsWith('create-docs.js')) {
   const models = JSON.parse(readFileSync('export/doc-models.json', 'utf8'));
   const { getGoogleClients } = await import('./google-auth.js');
   const clients = await getGoogleClients();
-  syncDocs(models, { folderId: process.env.DRIVE_FOLDER_ID, ...clients }).then((m) =>
-    console.log(`Synced ${Object.keys(m).length} docs`),
-  );
+  syncDocs(models, {
+    folderId: process.env.DRIVE_FOLDER_ID,
+    docs: throttleDocs(clients.docs),
+    drive: clients.drive,
+    skipExisting: true,
+  }).then((m) => console.log(`Synced ${Object.keys(m).length} docs`));
 }

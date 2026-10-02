@@ -37,6 +37,7 @@ export async function exportPages(baseUrl) {
   for (const p of pages) {
     p.slug = extractSlug(p);
     p.title = p.title.rendered;
+    p.excerpt = typeof p.excerpt === 'string' ? p.excerpt : p.excerpt?.rendered || '';
     p.html = p.content.rendered;
     for (const url of collectImageUrls(p.html)) {
       const file = `export/media/${p.slug}/${url.split('/').pop()}`;

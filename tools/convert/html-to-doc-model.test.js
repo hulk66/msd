@@ -39,13 +39,13 @@ describe('htmlToDocOps', () => {
     expect(ops).toEqual([
       { type: 'heading', level: 2, text: 'T' },
       { type: 'paragraph', text: 'Hello' },
-      { type: 'image', src: 'a.png', alt: 'A' },
+      { type: 'image', src: 'https://www.msd.com/a.png', alt: 'A' },
       { type: 'list', items: ['one', 'two'] },
     ]);
   });
   it('extracts lazy-loaded image urls', () => {
     const ops = htmlToDocOps('<picture><source data-srcset="m.jpg?w=375"><img data-src="big.jpg" alt="B"></picture>');
-    expect(ops).toEqual([{ type: 'image', src: 'big.jpg', alt: 'B' }]);
+    expect(ops).toEqual([{ type: 'image', src: 'https://www.msd.com/big.jpg', alt: 'B' }]);
   });
 });
 
@@ -74,6 +74,17 @@ describe('convertPage preserves content', () => {
   });
 });
 
+describe('image url absolutization', () => {
+  it('makes relative image urls absolute against the WP host', () => {
+    const ops = htmlToDocOps('<img src="/wp-content/uploads/a.jpg" alt="A">');
+    expect(ops).toEqual([{ type: 'image', src: 'https://www.msd.com/wp-content/uploads/a.jpg', alt: 'A' }]);
+  });
+  it('leaves absolute urls untouched', () => {
+    const ops = htmlToDocOps('<img src="https://cdn.example.com/a.jpg">');
+    expect(ops[0].src).toBe('https://cdn.example.com/a.jpg');
+  });
+});
+
 describe('per-block extractors preserve block-internal content (C3)', () => {
   it('cards: one row per card with image, title, text, link', () => {
     const html = `<div class="mco-content-teaser-cards">
@@ -84,7 +95,7 @@ describe('per-block extractors preserve block-internal content (C3)', () => {
     const model = convertPage({ slug: 's', title: 'T', excerpt: '', html });
     const rows = model.sections[0].blocks[0].rows;
     expect(rows.length).toBe(3);
-    expect(rows[0]).toEqual(['a.jpg', 'Card A', 'Desc A', '/a']);
+    expect(rows[0]).toEqual(['https://www.msd.com/a.jpg', 'Card A', 'Desc A', '/a']);
     expect(rows[2][1]).toBe('Card C');
   });
 
@@ -119,7 +130,7 @@ describe('per-block extractors preserve block-internal content (C3)', () => {
     const model = convertPage({ slug: 's', title: 'T', excerpt: '', html });
     const rows = model.sections[0].blocks[0].rows;
     expect(rows.length).toBe(3);
-    expect(rows[0]).toEqual(['1.jpg', 'One', 'd1', '/1']);
+    expect(rows[0]).toEqual(['https://www.msd.com/1.jpg', 'One', 'd1', '/1']);
   });
 
   it('hero: image, heading, copy, cta in one row', () => {
@@ -129,7 +140,7 @@ describe('per-block extractors preserve block-internal content (C3)', () => {
     </div>`;
     const model = convertPage({ slug: 's', title: 'T', excerpt: '', html });
     const rows = model.sections[0].blocks[0].rows;
-    expect(rows).toEqual([['hero.jpg', 'Title', 'Sub', '/go']]);
+    expect(rows).toEqual([['https://www.msd.com/hero.jpg', 'Title', 'Sub', '/go']]);
   });
 
   it('quote: quote and attribution', () => {
@@ -173,6 +184,6 @@ describe('per-block extractors preserve block-internal content (C3)', () => {
     </div>`;
     const model = convertPage({ slug: 's', title: 'T', excerpt: '', html });
     const rows = model.sections[0].blocks[0].rows;
-    expect(rows).toEqual([['cb.jpg', 'Head', 'Body copy', '/x']]);
+    expect(rows).toEqual([['https://www.msd.com/cb.jpg', 'Head', 'Body copy', '/x']]);
   });
 });

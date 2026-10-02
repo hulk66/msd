@@ -44,7 +44,7 @@ export function htmlToDocOps(html) {
       if (img) {
         ops.push({
           type: 'image',
-          src: img.getAttribute('data-src') || img.getAttribute('src') || '',
+          src: absUrl(img.getAttribute('data-src') || img.getAttribute('src') || ''),
           alt: img.getAttribute('alt') || '',
         });
         const text = el.text.trim();
@@ -55,7 +55,7 @@ export function htmlToDocOps(html) {
     } else if (el.tagName === 'IMG') {
       ops.push({
         type: 'image',
-        src: el.getAttribute('data-src') || el.getAttribute('src') || '',
+        src: absUrl(el.getAttribute('data-src') || el.getAttribute('src') || ''),
         alt: el.getAttribute('alt') || '',
       });
     } else {
@@ -70,13 +70,24 @@ export function htmlToDocOps(html) {
 // This is what keeps block-internal content out of the review pass.
 const text = (el) => (el?.text || '').replace(/\s+/g, ' ').trim();
 
+const WP_BASE = process.env.WP_BASE_URL || 'https://www.msd.com';
+
+function absUrl(url) {
+  if (!url) return '';
+  try {
+    return new URL(url, WP_BASE).toString();
+  } catch {
+    return url;
+  }
+}
+
 function imgOf(el) {
   const img = el.querySelector('img');
-  if (img) return img.getAttribute('data-src') || img.getAttribute('src') || '';
+  if (img) return absUrl(img.getAttribute('data-src') || img.getAttribute('src') || '');
   const source = el.querySelector('source');
   if (source) {
     const set = source.getAttribute('data-srcset') || source.getAttribute('srcset') || '';
-    return set.split(',')[0].trim().split(/\s+/)[0] || '';
+    return absUrl(set.split(',')[0].trim().split(/\s+/)[0] || '');
   }
   return '';
 }
@@ -146,6 +157,8 @@ function blockToRows(el, name) {
   return [row.length ? row : [' ']];
 }
 
+const stripTags = (s) => String(s).replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim();
+
 export function convertPage(page) {
   const root = parse(`<body>${page.html}</body>`);
   const body = root.querySelector('body');
@@ -179,10 +192,14 @@ export function convertPage(page) {
     }
   }
   flush();
+  // WP excerpts arrive as {rendered: html} objects; coerce to plain text.
+  const excerpt = typeof page.excerpt === 'string'
+    ? page.excerpt
+    : stripTags(page.excerpt?.rendered ?? '');
   return {
     slug: page.slug,
-    title: page.title,
-    description: page.excerpt || '',
+    title: typeof page.title === 'string' ? page.title : stripTags(page.title?.rendered ?? ''),
+    description: excerpt,
     sections,
   };
 }
