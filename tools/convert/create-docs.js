@@ -47,18 +47,25 @@ export function buildDocPlan(model) {
   return plan;
 }
 
-// Executes a doc plan against a Docs API client, keeping a running cursor
-// so every insert lands after the previous one. Tables are created first
-// and filled from a fresh document fetch (the API assigns cell indices).
+// Executes a doc plan by appending every step at the true end of the body.
+// A hand-tracked cursor drifts (tables, images, and auto-newlines all change
+// the index math), so each step re-fetches body.endSegmentIndex instead.
+// Cost: one GET per step — negligible against the batchUpdate per step.
 export async function executePlan(plan, documentId, docs) {
-  let cursor = 1;
+  const endIndexOf = async () => {
+    const doc = await docs.documents.get({ documentId });
+    return doc.data.body.endSegmentIndex ?? 1;
+  };
   for (const step of plan) {
+    const end = await endIndexOf();
+    // Insertion must land inside an existing paragraph: endSegmentIndex is
+    // one past the last char, so end - 1 is always valid (floored to 1).
+    const at = Math.max(end - 1, 1);
     if (step.type === 'text') {
       await docs.documents.batchUpdate({
         documentId,
-        requestBody: { requests: [{ insertText: { location: { index: cursor }, text: step.text } }] },
+        requestBody: { requests: [{ insertText: { location: { index: at }, text: step.text } }] },
       });
-      cursor += step.text.length;
     } else if (step.type === 'table') {
       const columns = Math.max(...step.rows.map((r) => r.length), step.header ? 1 : 0, 1);
       const rows = step.rows.length + (step.header ? 1 : 0);
@@ -66,22 +73,21 @@ export async function executePlan(plan, documentId, docs) {
         documentId,
         requestBody: {
           requests: [{
-            createTableRequest: {
+            insertTable: {
               rows,
               columns,
-              tableStartLocation: { index: cursor },
+              location: { index: at },
             },
           }],
         },
       });
-      // Fill cells: fetch the doc, locate the table at the cursor, insert
-      // text into each cell (cell content starts at cellStartIndex + 1).
+      // The API inserts a newline before the table, so the table starts at
+      // at + 1. Fill cells from a fresh fetch (the API assigns cell indices).
       const doc = await docs.documents.get({ documentId });
       const table = (doc.data.body.content || []).find(
-        (el) => el.table && el.startIndex === cursor,
+        (el) => el.table && el.startIndex === at + 1,
       )?.table;
       if (table) {
-        // Insert cell text using the API's cell start locations.
         const cellRequests = [];
         const allRows = step.header ? [[step.header], ...step.rows] : step.rows;
         let ri = 0;
@@ -99,12 +105,14 @@ export async function executePlan(plan, documentId, docs) {
           }
           ri += 1;
         }
+        // Descending index order: each insert shifts only positions AFTER
+        // it, so filling the last cell first keeps every target index valid
+        // within a single sequential batchUpdate.
+        cellRequests.sort((a, b) => b.insertText.location.index - a.insertText.location.index);
         if (cellRequests.length) {
           await docs.documents.batchUpdate({ documentId, requestBody: { requests: cellRequests } });
         }
       }
-      // Table footprint: each cell contributes at least 1 char; advance past it.
-      cursor += rows * columns + rows + 2;
     } else if (step.type === 'image') {
       await docs.documents.batchUpdate({
         documentId,
@@ -113,17 +121,16 @@ export async function executePlan(plan, documentId, docs) {
             insertInlineImage: {
               uri: step.url,
               objectSize: { height: { magnitude: 200, unit: 'PT' } },
-              location: { index: cursor },
+              location: { index: at },
             },
           }],
         },
       });
-      cursor += 1;
     }
   }
 }
 
-export async function syncDocs(models, { folderId, docs: docsOverride, drive: driveOverride } = {}) {
+export async function syncDocs(models, { folderId, docs: docsOverride, drive: driveOverride, mappingFile = MAPPING_FILE } = {}) {
   let docs = docsOverride;
   let drive = driveOverride;
   if (!docs || !drive) {
@@ -133,57 +140,38 @@ export async function syncDocs(models, { folderId, docs: docsOverride, drive: dr
     docs = docs || google.docs({ version: 'v1', auth });
     drive = drive || google.drive({ version: 'v3', auth });
   }
-  const mapping = loadMapping();
+  const mapping = loadMapping(mappingFile);
 
   for (const model of models) {
     const plan = planSync(model, mapping);
-    let fileId;
-    if (plan.action === 'create') {
-      const doc = await docs.documents.create({ requestBody: { title: model.title } });
-      fileId = doc.data.documentId;
-      if (folderId) {
-        await drive.files.update({ fileId, addParents: folderId, fields: 'id' });
-      }
-      mapping[model.slug] = {
-        fileId,
-        url: `https://docs.google.com/document/d/${fileId}/edit`,
-      };
-      // Persist immediately so a mid-run failure never duplicates docs (C2).
-      saveMapping(mapping);
-    } else {
-      fileId = plan.fileId;
-      await clearDocument(fileId, docs);
+    if (plan.action === 'update') {
+      // The Docs API has no deleteTable request, so a doc containing tables
+      // cannot be emptied in place. Recreate instead: trash the old file,
+      // create a fresh one, and keep the mapping pointing at the new doc.
+      await drive.files.update({ fileId: plan.fileId, requestBody: { trashed: true }, fields: 'id' });
     }
+    const doc = await docs.documents.create({ requestBody: { title: model.title } });
+    const fileId = doc.data.documentId;
+    if (folderId) {
+      await drive.files.update({ fileId, addParents: folderId, fields: 'id' });
+    }
+    mapping[model.slug] = {
+      fileId,
+      url: `https://docs.google.com/document/d/${fileId}/edit`,
+    };
+    // Persist immediately so a mid-run failure never duplicates docs (C2).
+    saveMapping(mapping, mappingFile);
     await executePlan(buildDocPlan(model), fileId, docs);
   }
-  saveMapping(mapping);
+  saveMapping(mapping, mappingFile);
   return mapping;
-}
-
-// Clears a document completely (text + tables) before re-inserting content.
-// Tables must be deleted individually; a deleteContentRange spanning one is
-// rejected by the API.
-export async function clearDocument(documentId, docs) {
-  const doc = await docs.documents.get({ documentId });
-  const content = doc.data.body.content || [];
-  const requests = [];
-  for (const el of [...content].reverse()) {
-    if (el.table) {
-      requests.push({ deleteTableRequest: { tableStartLocation: { index: el.startIndex } } });
-    } else if (el.paragraph && el.endIndex > el.startIndex + 1) {
-      requests.push({
-        deleteContentRange: { range: { startIndex: el.startIndex, endIndex: el.endIndex - 1 } },
-      });
-    }
-  }
-  if (requests.length) {
-    await docs.documents.batchUpdate({ documentId, requestBody: { requests } });
-  }
 }
 
 if (process.argv[1] && process.argv[1].endsWith('create-docs.js')) {
   const models = JSON.parse(readFileSync('export/doc-models.json', 'utf8'));
-  syncDocs(models, { folderId: process.env.DRIVE_FOLDER_ID }).then((m) =>
+  const { getGoogleClients } = await import('./google-auth.js');
+  const clients = await getGoogleClients();
+  syncDocs(models, { folderId: process.env.DRIVE_FOLDER_ID, ...clients }).then((m) =>
     console.log(`Synced ${Object.keys(m).length} docs`),
   );
 }
