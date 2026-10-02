@@ -1,0 +1,24 @@
+.article-images {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  padding: var(--spacing-section) 24px;
+  max-width: var(--width-content);
+  margin: 0 auto;
+}
+
+.article-images figure {
+  margin: 0;
+}
+
+.article-images img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.article-images figcaption {
+  font-size: var(--font-size-body);
+  color: var(--color-text-muted);
+  padding: 8px 0;
+}

@@ -1,0 +1,13 @@
+.vertical-scroll .scroll-section {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--spacing-section) 24px;
+  max-width: var(--width-content);
+  margin: 0 auto;
+}
+
+.vertical-scroll .scroll-section:nth-child(odd) {
+  background-color: var(--color-surface-alt);
+}

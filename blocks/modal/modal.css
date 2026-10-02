@@ -1,0 +1,21 @@
+.modal {
+  max-width: var(--width-content);
+  margin: 0 auto;
+  padding: var(--spacing-block-inner) 24px;
+}
+
+.modal details {
+  border: 1px solid var(--color-surface-gray);
+  border-radius: 4px;
+  padding: 12px 16px;
+}
+
+.modal summary {
+  cursor: pointer;
+  font-weight: var(--font-weight-link);
+  color: var(--color-brand-primary);
+}
+
+.modal .modal-body {
+  padding-top: 12px;
+}

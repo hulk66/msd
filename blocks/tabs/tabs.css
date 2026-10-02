@@ -1,0 +1,29 @@
+.tabs {
+  max-width: var(--width-content);
+  margin: 0 auto;
+  padding: var(--spacing-section) 24px;
+}
+
+.tabs .tab-buttons {
+  display: flex;
+  gap: 8px;
+  border-bottom: 2px solid var(--color-surface-gray);
+  margin-bottom: var(--spacing-block-inner);
+}
+
+.tabs .tab-button {
+  background: none;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  color: var(--color-text);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-link);
+  padding: 8px 16px;
+  cursor: pointer;
+  margin: 0 0 -2px;
+}
+
+.tabs .tab-button[aria-selected='true'] {
+  border-bottom-color: var(--color-brand-primary);
+  color: var(--color-brand-primary);
+}
