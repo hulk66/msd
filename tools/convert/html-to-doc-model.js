@@ -144,17 +144,29 @@ const EXTRACTORS = {
 
 function blockToRows(el, name) {
   const extract = EXTRACTORS[name];
+  let rows = [];
   if (extract) {
-    const rows = extract(el).filter((row) => row.some((v) => v !== ''));
-    if (rows.length) return rows;
+    rows = extract(el).filter((row) => row.some((v) => v !== ''));
   }
-  // Fallback for blocks without an extractor: single summary row.
-  const img = imgOf(el);
-  const heading = text(el.querySelector('h1, h2, h3, h4'));
-  const body = text(el).slice(0, 500);
-  const href = linkOf(el);
-  const row = [img, heading, body, href].filter((v) => v !== '');
-  return [row.length ? row : [' ']];
+  if (!rows.length) {
+    // Fallback for blocks without an extractor: single summary row.
+    const img = imgOf(el);
+    const heading = text(el.querySelector('h1, h2, h3, h4'));
+    const body = text(el).slice(0, 500);
+    const href = linkOf(el);
+    const row = [img, heading, body, href].filter((v) => v !== '');
+    rows = [row.length ? row : [' ']];
+  }
+  // Deduplicate identical rows (overlapping selector matches) and drop
+  // near-duplicates that share the same image and first text cell.
+  const seen = new Set();
+  rows = rows.filter((row) => {
+    const key = `${row[0] || ''}::${row[1] || ''}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  return rows;
 }
 
 const stripTags = (s) => String(s).replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').trim();

@@ -73,11 +73,39 @@ describe('executePlan appends at the true end index (no hand-tracked cursor)', (
     expect(cellInserts.map((r) => r.insertText.text)).toEqual(['d', 'c', 'b', 'a', 'cards']);
   });
 
+  it('inserts real images into cells marked as image URLs', async () => {
+    const docs = fakeDocs();
+    await executePlan(
+      [{ type: 'table', header: 'hero', rows: [['https://www.msd.com/x.jpg', 'Headline']] }],
+      'doc1',
+      docs,
+    );
+    const cellImg = docs.calls.find((r) => r.insertInlineImage && r.insertInlineImage.uri?.includes('x.jpg'));
+    expect(cellImg).toBeTruthy();
+    expect(cellImg.insertInlineImage.location.index).toBeTruthy();
+    // no text insert for the image cell
+    const cellTexts = docs.calls.filter((r) => r.insertText && r.insertText.text === 'https://www.msd.com/x.jpg');
+    expect(cellTexts.length).toBe(0);
+  });
+
   it('emits insertInlineImage with uri', async () => {
     const docs = fakeDocs();
     await executePlan([{ type: 'image', url: 'https://x/pic.jpg', alt: 'P' }], 'doc1', docs);
     const img = docs.calls.find((r) => r.insertInlineImage);
     expect(img.insertInlineImage.uri).toBe('https://x/pic.jpg');
+  });
+
+  it('applies named heading styles to heading steps (real h2s, not ## text)', async () => {
+    const docs = fakeDocs();
+    await executePlan(
+      [{ type: 'heading', level: 2, text: 'Section title' }],
+      'doc1',
+      docs,
+    );
+    const insert = docs.calls.find((r) => r.insertText);
+    expect(insert.insertText.text).toBe('Section title\n');
+    const style = docs.calls.find((r) => r.updateParagraphStyle);
+    expect(style.updateParagraphStyle.paragraphStyle.namedStyleType).toBe('HEADING_2');
   });
 });
 

@@ -18,6 +18,12 @@ export function planSync(model, mapping) {
     : { action: 'create', slug: model.slug };
 }
 
+// Image URLs become real inline images in cells; anything else is text.
+const IMAGE_RE = /^https?:\/\/\S+\.(jpe?g|png|webp|gif)(\?|$)/i;
+export function isImageUrl(value) {
+  return IMAGE_RE.test(value.trim());
+}
+
 // Builds an ordered plan of doc steps. The executor turns these into Google
 // Docs API requests with a running insertion cursor, so section order is
 // preserved and tables land where EDS's indexer expects them.
@@ -35,7 +41,7 @@ export function buildDocPlan(model) {
       plan.push({ type: 'table', header, rows: block.rows });
     }
     for (const op of section.plain) {
-      if (op.type === 'heading') plan.push({ type: 'text', text: `${'#'.repeat(op.level)} ${op.text}\n` });
+      if (op.type === 'heading') plan.push({ type: 'heading', level: op.level, text: op.text });
       else if (op.type === 'paragraph') plan.push({ type: 'text', text: `${op.text}\n` });
       else if (op.type === 'image') plan.push({ type: 'image', url: op.src, alt: op.alt });
       else if (op.type === 'list') plan.push({ type: 'text', text: `${op.items.map((i) => `- ${i}`).join('\n')}\n` });
@@ -66,6 +72,26 @@ export async function executePlan(plan, documentId, docs) {
         documentId,
         requestBody: { requests: [{ insertText: { location: { index: at }, text: step.text } }] },
       });
+    } else if (step.type === 'heading') {
+      // Real headings: insert the text, then style the paragraph with the
+      // named heading style. EDS renders these as h1-h6 (markdown-style
+      // '## text' would render as literal text).
+      await docs.documents.batchUpdate({
+        documentId,
+        requestBody: { requests: [{ insertText: { location: { index: at }, text: `${step.text}\n` } }] },
+      });
+      await docs.documents.batchUpdate({
+        documentId,
+        requestBody: {
+          requests: [{
+            updateParagraphStyle: {
+              range: { startIndex: at, endIndex: at + step.text.length },
+              paragraphStyle: { namedStyleType: `HEADING_${Math.min(step.level, 6)}` },
+              fields: 'namedStyleType',
+            },
+          }],
+        },
+      });
     } else if (step.type === 'table') {
       const columns = Math.max(...step.rows.map((r) => r.length), step.header ? 1 : 0, 1);
       const rows = step.rows.length + (step.header ? 1 : 0);
@@ -88,6 +114,12 @@ export async function executePlan(plan, documentId, docs) {
         (el) => el.table && el.startIndex === at + 1,
       )?.table;
       if (table) {
+        // Insert cell text using the API's cell start locations. Cells whose
+        // Fill cells one at a time in descending index order: each insert
+        // shifts only positions AFTER it, so descending order keeps every
+        // target index valid. Images are best-effort: if Google can't fetch
+        // the URL (hotlink protection, query params), fall back to the bare
+        // URL, then to a text link — a single bad image must not abort the doc.
         const cellRequests = [];
         const allRows = step.header ? [[step.header], ...step.rows] : step.rows;
         let ri = 0;
@@ -98,19 +130,52 @@ export async function executePlan(plan, documentId, docs) {
             const text = rowTexts[ci] ?? '';
             if (text) {
               cellRequests.push({
-                insertText: { location: { index: cell.content[0].endIndex - 1 }, text },
+                text,
+                index: cell.content[0].endIndex - 1,
+                isImage: isImageUrl(text),
               });
             }
             ci += 1;
           }
           ri += 1;
         }
-        // Descending index order: each insert shifts only positions AFTER
-        // it, so filling the last cell first keeps every target index valid
-        // within a single sequential batchUpdate.
-        cellRequests.sort((a, b) => b.insertText.location.index - a.insertText.location.index);
-        if (cellRequests.length) {
-          await docs.documents.batchUpdate({ documentId, requestBody: { requests: cellRequests } });
+        cellRequests.sort((a, b) => b.index - a.index);
+        for (const cr of cellRequests) {
+          if (cr.isImage) {
+            const bareUrl = cr.text.split('?')[0];
+            let inserted = false;
+            for (const uri of [cr.text, bareUrl]) {
+              try {
+                await docs.documents.batchUpdate({
+                  documentId,
+                  requestBody: {
+                    requests: [{
+                      insertInlineImage: {
+                        uri,
+                        objectSize: { height: { magnitude: 150, unit: 'PT' } },
+                        location: { index: cr.index },
+                      },
+                    }],
+                  },
+                });
+                inserted = true;
+                break;
+              } catch {
+                // try next fallback
+              }
+            }
+            if (!inserted) {
+              await docs.documents.batchUpdate({
+                documentId,
+                requestBody: { requests: [{ insertText: { location: { index: cr.index }, text: `[image: ${cr.text}]` } }] },
+              });
+            }
+          } else {
+            await docs.documents.batchUpdate({
+              documentId,
+              requestBody: { requests: [{ insertText: { location: { index: cr.index }, text: cr.text } }] },
+            });
+          }
         }
       }
     } else if (step.type === 'image') {
@@ -186,6 +251,7 @@ export async function syncDocs(models, { folderId, docs: docsOverride, drive: dr
     };
     // Persist immediately so a mid-run failure never duplicates docs (C2).
     saveMapping(mapping, mappingFile);
+    console.log(`[${new Date().toISOString().slice(11, 19)}] ${plan.action}: ${model.slug}`);
     await executePlan(buildDocPlan(model), fileId, docs);
   }
   saveMapping(mapping, mappingFile);
@@ -200,6 +266,6 @@ if (process.argv[1] && process.argv[1].endsWith('create-docs.js')) {
     folderId: process.env.DRIVE_FOLDER_ID,
     docs: throttleDocs(clients.docs),
     drive: clients.drive,
-    skipExisting: true,
+    skipExisting: process.env.SKIP_EXISTING === 'true',
   }).then((m) => console.log(`Synced ${Object.keys(m).length} docs`));
 }
