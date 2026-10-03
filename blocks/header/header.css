@@ -227,7 +227,7 @@ header nav .nav-sections .nav-drop > button[aria-expanded='true']::after {
   transform: rotate(315deg);
 }
 
-header > .nav-wrapper nav .nav-sections .nav-drop > button:focus-visible {
+header .nav-wrapper nav .nav-sections .nav-drop > button:focus-visible {
   outline: 2px solid currentcolor;
   outline-offset: 2px;
 }
@@ -329,25 +329,25 @@ header {
   background: #fff;
 }
 
-header > .nav-wrapper nav {
+header .nav-wrapper nav {
   height: 100px;
   align-items: stretch;
 }
 
-header > .nav-wrapper nav .nav-brand {
+header .nav-wrapper nav .nav-brand {
   display: flex;
   align-items: center;
 }
 
-header > .nav-wrapper nav .nav-brand a:any-link,
-header > .nav-wrapper nav .nav-brand p {
+header .nav-wrapper nav .nav-brand a:any-link,
+header .nav-wrapper nav .nav-brand p {
   font-size: 1.75rem;
   font-weight: 700;
   color: var(--color-text);
   text-decoration: none;
 }
 
-header > .nav-wrapper nav .nav-tools {
+header .nav-wrapper nav .nav-tools {
   background-color: var(--color-brand-primary);
   display: flex;
   align-items: center;
@@ -356,27 +356,27 @@ header > .nav-wrapper nav .nav-tools {
   margin: 0;
 }
 
-header > .nav-wrapper nav .nav-tools p,
-header > .nav-wrapper nav .nav-tools a:any-link {
+header .nav-wrapper nav .nav-tools p,
+header .nav-wrapper nav .nav-tools a:any-link {
   color: #fff;
   font-size: 1.25rem;
   font-weight: 700;
   text-decoration: none;
 }
 
-header > .nav-wrapper nav .nav-tools p::before {
+header .nav-wrapper nav .nav-tools p::before {
   content: '⌕';
   font-size: 1.5rem;
   margin-right: 12px;
 }
 
-header > .nav-wrapper nav .nav-hamburger {
+header .nav-wrapper nav .nav-hamburger {
   display: flex;
   align-items: center;
 }
 
 /* stylelint-disable-next-line no-descending-specificity */
-header > .nav-wrapper nav .nav-hamburger > button {
+header .nav-wrapper nav .nav-hamburger > button {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -391,29 +391,29 @@ header > .nav-wrapper nav .nav-hamburger > button {
   cursor: pointer;
 }
 
-header > .nav-wrapper nav .nav-hamburger > button::before {
+header .nav-wrapper nav .nav-hamburger > button::before {
   content: '☰';
   font-size: 1.25rem;
 }
 
-header > .nav-wrapper nav .nav-hamburger-icon,
-header > .nav-wrapper nav .nav-hamburger-icon::before,
-header > .nav-wrapper nav .nav-hamburger-icon::after {
+header .nav-wrapper nav .nav-hamburger-icon,
+header .nav-wrapper nav .nav-hamburger-icon::before,
+header .nav-wrapper nav .nav-hamburger-icon::after {
   display: none;
 }
 
-header > .nav-wrapper nav .nav-hamburger .menu-toggle-text-open,
-header > .nav-wrapper nav .nav-hamburger .menu-toggle-text-close {
+header .nav-wrapper nav .nav-hamburger .menu-toggle-text-open,
+header .nav-wrapper nav .nav-hamburger .menu-toggle-text-close {
   display: inline;
 }
 
 /* final cascade winner: sections live in the Menu overlay only */
 @media (width >= 900px) {
-  header > .nav-wrapper nav .nav-sections {
+  header .nav-wrapper nav .nav-sections {
     display: none;
   }
 
-  header > .nav-wrapper nav[aria-expanded='true'] .nav-sections {
+  header .nav-wrapper nav[aria-expanded='true'] .nav-sections {
     display: block;
     position: absolute;
     top: 100px;
@@ -425,11 +425,11 @@ header > .nav-wrapper nav .nav-hamburger .menu-toggle-text-close {
     z-index: 10;
   }
 
-  header > .nav-wrapper nav[aria-expanded='true'] .nav-sections ul {
+  header .nav-wrapper nav[aria-expanded='true'] .nav-sections ul {
     display: block;
   }
 
-  header > .nav-wrapper nav .nav-hamburger {
+  header .nav-wrapper nav .nav-hamburger {
     order: 3;
   }
 }
