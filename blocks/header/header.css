@@ -375,7 +375,7 @@ header > .nav-wrapper nav .nav-hamburger {
   align-items: center;
 }
 
-// stylelint-disable-next-line no-descending-specificity
+/* stylelint-disable-next-line no-descending-specificity */
 header > .nav-wrapper nav .nav-hamburger > button {
   display: flex;
   align-items: center;
