@@ -38,9 +38,36 @@ header nav[aria-expanded='true'] {
   header nav {
     display: flex;
     justify-content: space-between;
-    gap: 0 32px;
-    max-width: 1264px;
-    padding: 0 32px;
+    gap: 0;
+    max-width: none;
+    padding: 0;
+  }
+
+  /* source design: inline section links are only in the Menu overlay */
+  header nav .nav-sections {
+    display: none;
+  }
+
+  header nav[aria-expanded='true'] .nav-sections {
+    display: block;
+    position: absolute;
+    top: var(--nav-height);
+    left: 0;
+    right: 0;
+    background: #fff;
+    padding: 24px 32px;
+    box-shadow: 0 8px 16px rgb(0 0 0 / 10%);
+  }
+
+  header nav[aria-expanded='true'] .nav-sections ul {
+    display: block;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  header nav[aria-expanded='true'] .nav-sections li {
+    padding: 8px 0;
   }
 }
 
@@ -294,4 +321,88 @@ header nav .nav-sections [aria-expanded='true'] > a {
 header nav .nav-tools a:any-link {
   color: var(--color-brand-primary);
   font-weight: var(--font-weight-link);
+}
+
+/* msd.com masthead (1:1 with source): white bar, teal search/menu block */
+header {
+  background: #fff;
+}
+
+header nav {
+  height: 100px;
+  align-items: stretch;
+}
+
+header nav .nav-brand {
+  display: flex;
+  align-items: center;
+}
+
+header nav .nav-brand a:any-link,
+header nav .nav-brand p {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+/* teal block on the right: search + menu */
+header nav .nav-tools {
+  background-color: var(--color-brand-primary);
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding: 0 48px;
+  margin: 0;
+}
+
+header nav .nav-tools p,
+header nav .nav-tools a:any-link {
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+header nav .nav-tools p::before {
+  content: '⌕';
+  font-size: 1.5rem;
+  margin-right: 12px;
+}
+
+/* Menu button styled like the source (teal, bordered) */
+header nav .nav-hamburger {
+  display: flex;
+  align-items: center;
+}
+
+header nav .nav-hamburger button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: auto;
+  background: none;
+  border: 2px solid rgb(255 255 255 / 60%);
+  border-radius: 4px;
+  color: #fff;
+  font-size: 1.25rem;
+  font-weight: 700;
+  padding: 12px 24px;
+  cursor: pointer;
+}
+
+header nav .nav-hamburger button::before {
+  content: '☰';
+  font-size: 1.25rem;
+}
+
+header nav .nav-hamburger-icon,
+header nav .nav-hamburger-icon::before,
+header nav .nav-hamburger-icon::after {
+  display: none;
+}
+
+header nav .nav-hamburger .menu-toggle-text-open,
+header nav .nav-hamburger .menu-toggle-text-close {
+  display: inline;
 }

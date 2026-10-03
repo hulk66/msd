@@ -25,17 +25,18 @@
   z-index: 1;
   background-color: var(--color-brand-primary);
   color: #fff;
-  max-width: 680px;
+  max-width: 780px;
   margin: 0 0 0 10%;
-  padding: 48px 56px;
+  padding: 64px;
 }
 
 .video .video-copy h2 {
   color: #fff;
-  font-size: 2.5rem;
+  font-size: 3rem;
   font-weight: 300;
-  line-height: 1.2;
-  margin: 0 0 24px;
+  line-height: 1.15;
+  margin: 0 0 32px;
+  max-width: 480px;
 }
 
 .video .video-copy p {
@@ -49,7 +50,7 @@
   color: var(--color-brand-primary);
   font-size: var(--font-size-button);
   font-weight: var(--font-weight-button);
-  padding: 12px 24px;
+  padding: 14px 28px;
   text-decoration: none;
 }
 
