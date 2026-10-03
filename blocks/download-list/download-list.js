@@ -1,14 +1,21 @@
 /**
- * msd.com download-list (g5): file links marked for download.
+ * msd.com download-list (g5): file links marked for download. Link cells
+ * arrive as plain-text URLs paired with a title cell — converted to anchors.
  * @param {Element} block The download-list block element
  */
 export function buildDownloadList(block) {
   const rebuilt = document.createElement('div');
   rebuilt.className = 'download-list block';
-  block.querySelectorAll('a[href]').forEach((a) => {
-    a.setAttribute('download', '');
+  [...block.children].forEach((row) => {
+    const cells = [...row.querySelectorAll(':scope > div')];
+    if (cells.length === 2 && /^https?:\/\/\S+$/.test(cells[1].textContent.trim()) && !cells[1].querySelector('a')) {
+      const href = cells[1].textContent.trim();
+      const title = cells[0].textContent.trim();
+      cells[1].innerHTML = `<a href="${href}" download>${title}</a>`;
+    }
+    rebuilt.append(row);
   });
-  while (block.firstElementChild) rebuilt.append(block.firstElementChild);
+  rebuilt.querySelectorAll('a').forEach((a) => a.setAttribute('download', ''));
   return rebuilt;
 }
 

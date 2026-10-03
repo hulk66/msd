@@ -20,4 +20,14 @@ describe('content-block', () => {
     expect(block.classList.contains('right')).toBe(true);
     expect(block.classList.contains('negative')).toBe(true);
   });
+  it('wraps plain-text URL cells as CTA links and makes the block clickable', () => {
+    const el = document.createElement('div');
+    el.innerHTML = '<picture><img src="/a.jpg"></picture><h2>Head</h2><p>Body</p><div>https://www.msd.com/x/</div>';
+    const block = buildContentBlock(el);
+    const a = block.querySelector('.cb-copy a[href="https://www.msd.com/x/"]');
+    expect(a).toBeTruthy();
+    expect(a.textContent).toBe('Learn more');
+    expect(block.dataset.href).toBe('https://www.msd.com/x/');
+    expect(block.style.cursor).toBe('pointer');
+  });
 });
