@@ -68,3 +68,14 @@
     padding: 24px;
   }
 }
+
+/* full-bleed hero: unset section constraints */
+.video-container .video-wrapper {
+  max-width: unset;
+  padding: 0;
+  margin: 0;
+}
+
+.video-container {
+  padding: 0;
+}

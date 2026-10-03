@@ -67,7 +67,8 @@ function toggleAllNavSections(sections, expanded = false) {
 function toggleMenu(nav, navSections, forceExpanded = null) {
   const expanded = forceExpanded !== null ? false : nav.getAttribute('aria-expanded') === 'true';
   const button = nav.querySelector('.nav-hamburger button');
-  document.body.style.overflowY = expanded ? '' : 'hidden';
+  // lock scroll only while the menu overlay is open
+  document.body.style.overflowY = expanded ? 'hidden' : '';
   // the nav starts collapsed at all widths; the Menu button toggles the overlay
   nav.setAttribute('aria-expanded', expanded ? 'true' : 'false');
   toggleAllNavSections(navSections, expanded ? 'false' : 'true');
@@ -112,6 +113,15 @@ export default async function decorate(block) {
   if (brandLink) {
     brandLink.className = '';
     brandLink.closest('.button-container').className = '';
+  }
+  // source design: MSD circle logo + wordmark (asset from the brand theme)
+  const brandText = navBrand.querySelector('p, a');
+  if (brandText) {
+    const logo = document.createElement('img');
+    logo.src = '/icons/msd-logo.svg';
+    logo.alt = 'MSD';
+    logo.className = 'msd-logo';
+    brandText.replaceWith(logo);
   }
 
   const navSections = nav.querySelector('.nav-sections');
