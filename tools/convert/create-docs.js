@@ -60,7 +60,11 @@ export function buildDocPlan(model) {
 export async function executePlan(plan, documentId, docs) {
   const endIndexOf = async () => {
     const doc = await docs.documents.get({ documentId });
-    return doc.data.body.endSegmentIndex ?? 1;
+    // Body has no endSegmentIndex field — derive the end from the last
+    // element's endIndex (the body always ends with a paragraph).
+    const content = doc.data.body.content || [];
+    const last = content[content.length - 1];
+    return last?.endIndex ?? 1;
   };
   for (const step of plan) {
     const end = await endIndexOf();

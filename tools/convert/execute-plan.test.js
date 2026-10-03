@@ -23,19 +23,24 @@ function fakeDocs() {
       get: async () => ({
         data: {
           body: {
-            endSegmentIndex: end,
-            content: tableStart === null ? [] : [
-              {
-                startIndex: tableStart,
-                endIndex: tableStart + 15,
-                table: {
-                  tableRows: [
-                    { tableCells: [{ content: [{ startIndex: tableStart + 1, endIndex: tableStart + 2 }] }, { content: [{ startIndex: tableStart + 2, endIndex: tableStart + 3 }] }] },
-                    { tableCells: [{ content: [{ startIndex: tableStart + 4, endIndex: tableStart + 5 }] }, { content: [{ startIndex: tableStart + 5, endIndex: tableStart + 6 }] }] },
-                    { tableCells: [{ content: [{ startIndex: tableStart + 7, endIndex: tableStart + 8 }] }, { content: [{ startIndex: tableStart + 8, endIndex: tableStart + 9 }] }] },
-                  ],
+            // no endSegmentIndex field (the real API doesn't have one either);
+            // endIndexOf derives the end from the last element's endIndex
+            content: [
+              { startIndex: 0, endIndex: end, paragraph: {} },
+              ...(tableStart === null ? [] : [
+                {
+                  startIndex: tableStart,
+                  endIndex: tableStart + 15,
+                  table: {
+                    tableRows: [
+                      { tableCells: [{ content: [{ startIndex: tableStart + 1, endIndex: tableStart + 2 }] }, { content: [{ startIndex: tableStart + 2, endIndex: tableStart + 3 }] }] },
+                      { tableCells: [{ content: [{ startIndex: tableStart + 4, endIndex: tableStart + 5 }] }, { content: [{ startIndex: tableStart + 5, endIndex: tableStart + 6 }] }] },
+                      { tableCells: [{ content: [{ startIndex: tableStart + 7, endIndex: tableStart + 8 }] }, { content: [{ startIndex: tableStart + 8, endIndex: tableStart + 9 }] }] },
+                    ],
+                  },
                 },
-              },
+                { startIndex: tableStart + 15, endIndex: end, paragraph: {} },
+              ]),
             ],
           },
         },
