@@ -32,6 +32,13 @@ export function buildHeroBlock(block) {
       cell.append(a);
     }
   });
+  // promote the first text cell to the hero heading
+  const firstText = copy.querySelector(':scope > div:not(.hero-picture), :scope > p');
+  if (firstText && !copy.querySelector('h1, h2, h3')) {
+    const h1 = document.createElement('h1');
+    h1.textContent = firstText.textContent.trim();
+    firstText.replaceWith(h1);
+  }
   rebuilt.append(copy);
   return rebuilt;
 }
