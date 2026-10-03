@@ -11,4 +11,29 @@ describe('columns', () => {
     expect(block.textContent).toContain('Three');
     expect(block.querySelectorAll('.col img').length).toBe(2);
   });
+
+  it('wraps plain-text URL cells as links and makes the column clickable', () => {
+    const el = document.createElement('div');
+    el.innerHTML = '<div><img src="/1.jpg"><h3>Patients</h3><p>Info</p><div>https://www.msd.com/patients/</div></div>';
+    const block = buildColumns(el);
+    const col = block.querySelector('.col');
+    const a = col.querySelector('a[href="https://www.msd.com/patients/"]');
+    expect(a).toBeTruthy();
+    expect(a.textContent).toBe('Patients');
+    expect(col.style.cursor).toBe('pointer');
+    expect(col.dataset.href).toBe('https://www.msd.com/patients/');
+  });
+
+  it('wraps plain-text URL cells as links and marks the column clickable', () => {
+    const el = document.createElement('div');
+    el.innerHTML = '<div><img src="/1.jpg"><h3>Patients</h3><p>Info</p><div>https://www.msd.com/patients/</div></div>';
+    const block = buildColumns(el);
+    const col = block.querySelector('.col');
+    const a = col.querySelector('a[href="https://www.msd.com/patients/"]');
+    expect(a).toBeTruthy();
+    expect(a.textContent).toBe('Patients');
+    expect(col.style.cursor).toBe('pointer');
+    expect(col.dataset.href).toBe('https://www.msd.com/patients/');
+    expect(col.getAttribute('role')).toBe('link');
+  });
 });
