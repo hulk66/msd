@@ -44,7 +44,7 @@ export function buildDocPlan(model) {
       if (op.type === 'heading') plan.push({ type: 'heading', level: op.level, text: op.text });
       else if (op.type === 'paragraph') plan.push({ type: 'text', text: `${op.text}\n` });
       else if (op.type === 'image') plan.push({ type: 'image', url: op.src, alt: op.alt });
-      else if (op.type === 'list') plan.push({ type: 'text', text: `${op.items.map((i) => `- ${i}`).join('\n')}\n` });
+      else if (op.type === 'list') plan.push({ type: 'list', items: op.items });
     }
     const smRows = Object.entries(section.metadata || {});
     if (smRows.length) plan.push({ type: 'table', header: 'Section Metadata', rows: smRows });
@@ -76,6 +76,64 @@ export async function executePlan(plan, documentId, docs) {
         documentId,
         requestBody: { requests: [{ insertText: { location: { index: at }, text: step.text } }] },
       });
+    } else if (step.type === 'paragraph' && (step.link || step.bold)) {
+      // Linked paragraph (e.g. nav brand): insert text, then style it.
+      await docs.documents.batchUpdate({
+        documentId,
+        requestBody: { requests: [{ insertText: { location: { index: at }, text: `${step.text}\n` } }] },
+      });
+      const textStyle = { bold: !!step.bold };
+      if (step.link) textStyle.link = { url: step.link };
+      await docs.documents.batchUpdate({
+        documentId,
+        requestBody: {
+          requests: [{
+            updateTextStyle: {
+              range: { startIndex: at, endIndex: at + step.text.length },
+              textStyle,
+              fields: Object.keys(textStyle).join(','),
+            },
+          }],
+        },
+      });
+    } else if (step.type === 'list') {
+      // Real bulleted list: insert items, apply bullet preset, link items.
+      const text = step.items.map((i) => (typeof i === 'string' ? i : i.text)).map((t) => `${t}\n`).join('');
+      await docs.documents.batchUpdate({
+        documentId,
+        requestBody: { requests: [{ insertText: { location: { index: at }, text } }] },
+      });
+      await docs.documents.batchUpdate({
+        documentId,
+        requestBody: {
+          requests: [{
+            createParagraphBullets: {
+              range: { startIndex: at, endIndex: at + text.length },
+              bulletPreset: 'BULLET_DISC_CIRCLE_SQUARE',
+            },
+          }],
+        },
+      });
+      // link the items (each item line: from its start to before its newline)
+      let pos = at;
+      for (const item of step.items) {
+        const t = typeof item === 'string' ? item : item.text;
+        if (typeof item === 'object' && item.link) {
+          await docs.documents.batchUpdate({
+            documentId,
+            requestBody: {
+              requests: [{
+                updateTextStyle: {
+                  range: { startIndex: pos, endIndex: pos + t.length },
+                  textStyle: { link: { url: item.link } },
+                  fields: 'link',
+                },
+              }],
+            },
+          });
+        }
+        pos += t.length + 1;
+      }
     } else if (step.type === 'heading') {
       // Real headings: insert the text, then style the paragraph with the
       // named heading style. EDS renders these as h1-h6 (markdown-style

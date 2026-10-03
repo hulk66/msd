@@ -1,40 +1,69 @@
+/* msd.com hero video block (b25): full-bleed image/video with teal overlay
+   panel containing white copy and a CTA — 1:1 with the source homepage hero. */
 .video {
-  display: grid;
-  grid-template-columns: 3fr 2fr;
-  gap: var(--spacing-section) 48px;
+  position: relative;
+  min-height: 480px;
+  display: flex;
   align-items: center;
-  padding: var(--spacing-section) 24px;
-  max-width: var(--width-content);
-  margin: 0 auto;
+  padding: 0;
+}
+
+.video .video-poster {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
 }
 
 .video .video-poster img {
   width: 100%;
-  height: auto;
-  display: block;
+  height: 100%;
+  object-fit: cover;
 }
 
-.video h2 {
-  font-size: var(--font-size-h2);
-  font-weight: var(--font-weight-h2);
-  line-height: var(--line-height-h2);
-  margin: 0 0 12px;
+.video .video-copy {
+  position: relative;
+  z-index: 1;
+  background-color: var(--color-brand-primary);
+  color: #fff;
+  max-width: 680px;
+  margin: 0 0 0 10%;
+  padding: 48px 56px;
+}
+
+.video .video-copy h2 {
+  color: #fff;
+  font-size: 2.5rem;
+  font-weight: 300;
+  line-height: 1.2;
+  margin: 0 0 24px;
+}
+
+.video .video-copy p {
+  color: #fff;
+  margin: 0 0 16px;
 }
 
 .video .video-embed a:any-link {
   display: inline-block;
-  background-color: var(--color-brand-primary);
-  color: #fff;
+  background-color: #fff;
+  color: var(--color-brand-primary);
   font-size: var(--font-size-button);
   font-weight: var(--font-weight-button);
   padding: 12px 24px;
-  border-radius: 4px;
   text-decoration: none;
-  margin-bottom: 12px;
+}
+
+.video .video-embed a:any-link:hover {
+  background-color: var(--color-surface-alt);
 }
 
 @media (width < 768px) {
   .video {
-    grid-template-columns: 1fr;
+    min-height: 360px;
+  }
+
+  .video .video-copy {
+    margin: 0;
+    padding: 24px;
   }
 }

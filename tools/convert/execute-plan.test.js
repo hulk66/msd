@@ -112,6 +112,32 @@ describe('executePlan appends at the true end index (no hand-tracked cursor)', (
     const style = docs.calls.find((r) => r.updateParagraphStyle);
     expect(style.updateParagraphStyle.paragraphStyle.namedStyleType).toBe('HEADING_2');
   });
+
+  it('renders linked paragraphs with link + bold text style (nav brand)', async () => {
+    const docs = fakeDocs();
+    await executePlan(
+      [{ type: 'paragraph', text: 'MSD', link: 'https://main--msd--hulk66.aem.live/', bold: true }],
+      'doc1',
+      docs,
+    );
+    const style = docs.calls.find((r) => r.updateTextStyle);
+    expect(style.updateTextStyle.textStyle.link.url).toBe('https://main--msd--hulk66.aem.live/');
+    expect(style.updateTextStyle.textStyle.bold).toBe(true);
+    expect(style.updateTextStyle.fields).toContain('link');
+  });
+
+  it('renders list steps as real bulleted lists with linked items', async () => {
+    const docs = fakeDocs();
+    await executePlan(
+      [{ type: 'list', items: [{ text: 'Company', link: '/company-overview-overview' }, { text: 'Research', link: '/research-overview' }] }],
+      'doc1',
+      docs,
+    );
+    const bullets = docs.calls.find((r) => r.createParagraphBullets);
+    expect(bullets.createParagraphBullets.bulletPreset).toBe('BULLET_DISC_CIRCLE_SQUARE');
+    const links = docs.calls.filter((r) => r.updateTextStyle && r.updateTextStyle.textStyle.link);
+    expect(links.length).toBe(2);
+  });
 });
 
 describe('syncDocs update path (no deleteTable in the API — recreate instead)', () => {
