@@ -20,6 +20,18 @@ export function buildVideo(block) {
   [...block.children].forEach((child) => {
     if (child !== poster) copy.append(child);
   });
+  // URL-only cells arrive as plain text (Docs cells don't auto-link);
+  // wrap them in anchors so the CTA renders as a button.
+  [...copy.querySelectorAll('div, p')].forEach((cell) => {
+    const text = cell.textContent.trim();
+    if (/^https?:\/\/\S+$/.test(text) && !cell.querySelector('a')) {
+      const a = document.createElement('a');
+      a.href = text;
+      a.textContent = 'Learn more';
+      cell.textContent = '';
+      cell.append(a);
+    }
+  });
   const link = copy.querySelector('a[href]');
   if (link) {
     const embed = document.createElement('div');
