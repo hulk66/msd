@@ -406,3 +406,31 @@ header nav .nav-hamburger .menu-toggle-text-open,
 header nav .nav-hamburger .menu-toggle-text-close {
   display: inline;
 }
+
+
+/* final cascade winner: sections live in the Menu overlay only */
+@media (width >= 900px) {
+  header nav .nav-sections {
+    display: none;
+  }
+
+  header nav[aria-expanded='true'] .nav-sections {
+    display: block;
+    position: absolute;
+    top: 100px;
+    left: 0;
+    right: 0;
+    background: #fff;
+    padding: 24px 32px;
+    box-shadow: 0 8px 16px rgb(0 0 0 / 10%);
+    z-index: 10;
+  }
+
+  header nav[aria-expanded='true'] .nav-sections ul {
+    display: block;
+  }
+
+  header nav .nav-hamburger {
+    order: 3;
+  }
+}
