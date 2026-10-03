@@ -332,7 +332,6 @@ header {
 header .nav-wrapper nav {
   height: 100px;
   align-items: stretch;
-  justify-content: space-between;
 }
 
 header .nav-wrapper nav .nav-brand {
@@ -354,7 +353,7 @@ header .nav-wrapper nav .nav-tools {
   align-items: center;
   gap: 32px;
   padding: 0 48px;
-  margin: 0;
+  margin: 0 0 0 auto;
   height: 100px;
 }
 
