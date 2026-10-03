@@ -332,6 +332,7 @@ header {
 header .nav-wrapper nav {
   height: 100px;
   align-items: stretch;
+  justify-content: space-between;
 }
 
 header .nav-wrapper nav .nav-brand {
@@ -354,6 +355,7 @@ header .nav-wrapper nav .nav-tools {
   gap: 32px;
   padding: 0 48px;
   margin: 0;
+  height: 100px;
 }
 
 header .nav-wrapper nav .nav-tools p,
@@ -373,6 +375,10 @@ header .nav-wrapper nav .nav-tools p::before {
 header .nav-wrapper nav .nav-hamburger {
   display: flex;
   align-items: center;
+  order: 3;
+  background-color: var(--color-brand-primary);
+  height: 100px;
+  padding: 0 32px;
 }
 
 /* stylelint-disable-next-line no-descending-specificity */
@@ -382,12 +388,11 @@ header .nav-wrapper nav .nav-hamburger > button {
   gap: 12px;
   height: auto;
   background: none;
-  border: 2px solid rgb(255 255 255 / 60%);
-  border-radius: 4px;
+  border: none;
   color: #fff;
   font-size: 1.25rem;
   font-weight: 700;
-  padding: 12px 24px;
+  padding: 0;
   cursor: pointer;
 }
 
