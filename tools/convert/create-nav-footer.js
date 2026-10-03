@@ -31,7 +31,7 @@ const navModel = {
   sections: [
     { blocks: [], plain: [{ type: 'paragraph', text: 'MSD', link: '/', bold: true }], metadata: {} },
     { blocks: [], plain: [{ type: 'list', items: parseNav().map((i) => ({ text: i.text, link: i.link })) }], metadata: {} },
-    { blocks: [], plain: [{ type: 'paragraph', text: 'Contact Us', link: '/contact-us/', bold: true }], metadata: {} },
+    { blocks: [], plain: [{ type: 'paragraph', text: 'Search everything' }], metadata: {} },
   ],
 };
 
