@@ -21,6 +21,17 @@ export function buildHeroBlock(block) {
   [...block.children].forEach((child) => {
     if (child !== picture) copy.append(child);
   });
+  // URL-only cells arrive as plain text; wrap them as CTA anchors.
+  [...copy.querySelectorAll('div, p')].forEach((cell) => {
+    const text = cell.textContent.trim();
+    if (/^https?:\/\/\S+$/.test(text) && !cell.querySelector('a')) {
+      const a = document.createElement('a');
+      a.href = text;
+      a.textContent = 'Learn more';
+      cell.textContent = '';
+      cell.append(a);
+    }
+  });
   rebuilt.append(copy);
   return rebuilt;
 }

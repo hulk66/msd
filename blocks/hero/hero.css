@@ -1,4 +1,6 @@
-/* msd.com hero — full-bleed image, copy overlay (1:1 with b2-hero-block) */
+/* msd.com hero — two layouts:
+   - default / .full: split hero (image left, copy right on white) — inner pages
+   - homepage uses the video block for the teal-overlay hero */
 .hero-container .hero-wrapper {
   max-width: unset;
   padding: 0;
@@ -6,29 +8,18 @@
 
 .hero {
   position: relative;
-  padding: 40px 24px;
-  min-height: 300px;
-}
-
-.hero.full {
-  min-height: 480px;
-  display: flex;
-  align-items: flex-end;
+  padding: 0;
 }
 
 .hero h1 {
-  max-width: var(--width-content);
-  margin: 0 auto;
-  color: var(--background-color);
+  margin: 0 0 16px;
+  color: var(--color-text);
   font-size: var(--heading-font-size-xxl);
   font-weight: var(--font-weight-h2);
   line-height: var(--line-height-h2);
 }
 
 .hero .hero-picture {
-  position: absolute;
-  z-index: -1;
-  inset: 0;
   overflow: hidden;
 }
 
@@ -39,31 +30,62 @@
 }
 
 .hero .hero-copy {
-  max-width: var(--width-content);
-  margin: 0 auto;
-  width: 100%;
+  padding: 48px 24px;
+  max-width: 640px;
 }
 
 .hero .hero-copy p {
-  color: var(--background-color);
   font-size: var(--font-size-body);
-  line-height: 1.4;
+  line-height: 1.6;
+  color: var(--color-text);
 }
 
-.hero .hero-copy a.button:any-link {
+.hero .hero-copy a.button:any-link,
+.hero .hero-copy a:any-link {
+  display: inline-block;
   background-color: var(--color-brand-primary);
   color: #fff;
   font-size: var(--font-size-button);
   font-weight: var(--font-weight-button);
   padding: 12px 24px;
   border-radius: 4px;
+  text-decoration: none;
 }
 
-.hero .hero-copy a.button:any-link:hover {
+.hero .hero-copy a.button:any-link:hover,
+.hero .hero-copy a:any-link:hover {
   background-color: var(--color-brand-primary-hover);
 }
 
-/* dark scrim for legible copy over imagery (negative variant) */
+/* split layout: image left, copy right (inner-page hero) */
+.hero.full {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  min-height: 640px;
+}
+
+.hero.full .hero-picture {
+  height: 100%;
+}
+
+.hero.full .hero-copy {
+  padding: 48px 10%;
+}
+
+/* dark scrim variant (negative): copy over image with gradient */
+.hero.negative .hero-picture {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.hero.negative {
+  min-height: 480px;
+  display: flex;
+  align-items: flex-end;
+}
+
 .hero.negative .hero-picture::after {
   content: '';
   position: absolute;
@@ -71,9 +93,27 @@
   background: linear-gradient(180deg, rgb(0 0 0 / 0%) 40%, rgb(0 0 0 / 60%) 100%);
 }
 
+.hero.negative .hero-copy {
+  position: relative;
+  z-index: 1;
+  max-width: var(--width-content);
+  width: 100%;
+  margin: 0 auto;
+}
+
+.hero.negative h1,
+.hero.negative .hero-copy p {
+  color: #fff;
+}
+
 @media (width < 768px) {
   .hero.full {
-    min-height: 360px;
+    grid-template-columns: 1fr;
+    min-height: unset;
+  }
+
+  .hero.full .hero-picture {
+    height: 320px;
   }
 
   .hero h1 {
