@@ -65,17 +65,17 @@ function toggleAllNavSections(sections, expanded = false) {
  * @param {*} forceExpanded Optional param to force nav expand behavior when not null
  */
 function toggleMenu(nav, navSections, forceExpanded = null) {
-  const expanded = forceExpanded !== null ? false : nav.getAttribute('aria-expanded') === 'true';
+  const expanded = forceExpanded === null ? nav.getAttribute('aria-expanded') !== 'true' : forceExpanded;
   const button = nav.querySelector('.nav-hamburger button');
   // lock scroll only while the menu overlay is open
   document.body.style.overflowY = expanded ? 'hidden' : '';
   // the nav starts collapsed at all widths; the Menu button toggles the overlay
   nav.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-  toggleAllNavSections(navSections, expanded ? 'false' : 'true');
-  button.setAttribute('aria-label', expanded ? 'Open navigation' : 'Close navigation');
+  toggleAllNavSections(navSections, false);
+  button.setAttribute('aria-label', expanded ? 'Close navigation' : 'Open navigation');
 
   // enable menu collapse on escape keypress
-  if (!expanded || isDesktop.matches) {
+  if (expanded) {
     // collapse menu on escape press
     window.addEventListener('keydown', closeOnEscape);
     // collapse menu on focus lost
@@ -158,9 +158,9 @@ export default async function decorate(block) {
   hamburger.addEventListener('click', () => toggleMenu(nav, navSections));
   nav.prepend(hamburger);
   nav.setAttribute('aria-expanded', 'false');
-  // prevent mobile nav behavior on window resize
-  toggleMenu(nav, navSections, isDesktop.matches);
-  isDesktop.addEventListener('change', () => toggleMenu(nav, navSections, isDesktop.matches));
+  // the menu starts collapsed at all widths; re-apply on breakpoint changes
+  toggleMenu(nav, navSections, false);
+  isDesktop.addEventListener('change', () => toggleMenu(nav, navSections, false));
 
   const navWrapper = document.createElement('div');
   navWrapper.className = 'nav-wrapper';
