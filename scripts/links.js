@@ -3,7 +3,7 @@
 // A following cell (or the nearest heading) provides the link label.
 
 export function isPlainUrl(text) {
-  return /^https?:\/\/\S+$/.test((text || '').trim());
+  return /^(?:https?:\/\/\S+|\/\S*)$/.test((text || '').trim());
 }
 
 /**

@@ -32,4 +32,13 @@ describe('hero block', () => {
     const block = buildHeroBlock(el);
     expect(block.classList.contains('full')).toBe(true);
   });
+
+  it('wraps site-relative path cells as CTA anchors', () => {
+    const el = document.createElement('div');
+    el.innerHTML = '<picture><img src="/h.jpg"></picture><p>Copy</p><div>/research-overview</div><div>Our research</div>';
+    const block = buildHeroBlock(el);
+    const a = block.querySelector('.hero-copy a[href="/research-overview"]');
+    expect(a).toBeTruthy();
+    expect(a.textContent).toBe('Our research');
+  });
 });

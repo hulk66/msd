@@ -3,6 +3,8 @@
  * content is grouped into a copy overlay. Variants: `full` (full-bleed).
  * @param {Element} block The hero block element
  */
+import { isPlainUrl } from '../../scripts/links.js';
+
 export function buildHeroBlock(block) {
   const variant = [...block.classList].filter((c) => c !== 'hero' && c !== 'block');
   const rebuilt = document.createElement('div');
@@ -21,13 +23,16 @@ export function buildHeroBlock(block) {
   [...block.children].forEach((child) => {
     if (child !== picture) copy.append(child);
   });
-  // URL-only cells arrive as plain text; wrap them as CTA anchors.
-  [...copy.querySelectorAll('div, p')].forEach((cell) => {
+  // URL-only cells arrive as plain text; wrap them as CTA anchors. A cell
+  // following the URL cell is the CTA label (same convention as video).
+  const copyCells = [...copy.querySelectorAll('div, p')];
+  copyCells.forEach((cell, i) => {
     const text = cell.textContent.trim();
-    if (/^https?:\/\/\S+$/.test(text) && !cell.querySelector('a')) {
+    if (isPlainUrl(text) && !cell.querySelector('a')) {
       const a = document.createElement('a');
       a.href = text;
-      a.textContent = 'Learn more';
+      a.textContent = copyCells[i + 1]?.textContent.trim() || 'Learn more';
+      if (copyCells[i + 1]) copyCells[i + 1].remove();
       cell.textContent = '';
       cell.append(a);
     }

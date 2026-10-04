@@ -36,4 +36,16 @@ describe('columns', () => {
     expect(col.dataset.href).toBe('https://www.msd.com/patients/');
     expect(col.getAttribute('role')).toBe('link');
   });
+
+  it('treats site-relative path cells as the column link', () => {
+    const el = document.createElement('div');
+    el.innerHTML = '<div><img src="/1.jpg"><h3>Patients</h3><p>Info</p><div>/patients-overview</div></div>';
+    const block = buildColumns(el);
+    const col = block.querySelector('.col');
+    const a = col.querySelector('a[href="/patients-overview"]');
+    expect(a).toBeTruthy();
+    expect(a.textContent).toBe('Patients');
+    expect(col.dataset.href).toBe('/patients-overview');
+    expect(col.getAttribute('role')).toBe('link');
+  });
 });

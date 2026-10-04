@@ -3,6 +3,8 @@
  * never an auto-playing third-party embed.
  * @param {Element} block The video block element
  */
+import { isPlainUrl } from '../../scripts/links.js';
+
 export function buildVideo(block) {
   const rebuilt = document.createElement('div');
   rebuilt.className = 'video block';
@@ -25,7 +27,7 @@ export function buildVideo(block) {
   const cells = [...copy.querySelectorAll('div, p')];
   cells.forEach((cell, i) => {
     const text = cell.textContent.trim();
-    if (/^https?:\/\/\S+$/.test(text) && !cell.querySelector('a')) {
+    if (isPlainUrl(text) && !cell.querySelector('a')) {
       const a = document.createElement('a');
       a.href = text;
       a.textContent = cells[i + 1]?.textContent.trim() || 'Learn more';

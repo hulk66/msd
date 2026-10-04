@@ -4,6 +4,8 @@
  * role="link" with data-href).
  * @param {Element} block The columns block element
  */
+import { isPlainUrl } from '../../scripts/links.js';
+
 export function buildColumns(block) {
   const rebuilt = document.createElement('div');
   rebuilt.className = 'columns block';
@@ -14,7 +16,7 @@ export function buildColumns(block) {
 
     // URL-only cells become the column link; the title is the anchor text.
     const cells = [...col.querySelectorAll('div, p')];
-    const urlCell = cells.find((c) => /^https?:\/\/\S+$/.test(c.textContent.trim()) && !c.querySelector('a'));
+    const urlCell = cells.find((c) => isPlainUrl(c.textContent.trim()) && !c.querySelector('a'));
     if (urlCell) {
       const href = urlCell.textContent.trim();
       const title = col.querySelector('h3, h2');

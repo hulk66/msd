@@ -4,7 +4,7 @@
  * and make the whole card clickable.
  * @param {Element} block The cards block element
  */
-import { makeClickable } from '../../scripts/links.js';
+import { isPlainUrl, makeClickable } from '../../scripts/links.js';
 
 export function buildCards(block) {
   const rebuilt = document.createElement('div');
@@ -15,7 +15,7 @@ export function buildCards(block) {
     while (child.firstElementChild) card.append(child.firstElementChild);
     // link cells arrive as plain-text URLs: the title becomes the link and
     // the whole card is clickable (source behavior)
-    const urlCell = [...card.querySelectorAll('div, p')].find((c) => /^https?:\/\/\S+$/.test(c.textContent.trim()) && !c.querySelector('a'));
+    const urlCell = [...card.querySelectorAll('div, p')].find((c) => isPlainUrl(c.textContent.trim()) && !c.querySelector('a'));
     if (urlCell) {
       const href = urlCell.textContent.trim();
       urlCell.remove();
