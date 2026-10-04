@@ -6,6 +6,7 @@ const FAMILY_MAP = {
   // hero family
   'b2-hero-block': 'hero',
   'article-hero-block': 'hero',
+  'f1-article-hero': 'hero',
   'text-hero-block': 'hero',
   'featured-banner': 'hero',
   'stock-ticker-hero-block': 'hero',
