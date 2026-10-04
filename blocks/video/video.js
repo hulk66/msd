@@ -24,7 +24,9 @@ export function buildVideo(block) {
   });
   // URL-only cells arrive as plain text (Docs cells don't auto-link);
   // wrap them in anchors. A cell following the URL cell is the CTA label.
-  const cells = [...copy.querySelectorAll('div, p')];
+  // Enumerate actual cells (block > row > cell) — descendant queries would
+  // see each cell twice once aem.js wraps bare text in <p>.
+  const cells = [...copy.children].flatMap((row) => [...row.children]);
   cells.forEach((cell, i) => {
     const text = cell.textContent.trim();
     if (isPlainUrl(text) && !cell.querySelector('a')) {

@@ -25,7 +25,9 @@ export function buildHeroBlock(block) {
   });
   // URL-only cells arrive as plain text; wrap them as CTA anchors. A cell
   // following the URL cell is the CTA label (same convention as video).
-  const copyCells = [...copy.querySelectorAll('div, p')];
+  // Enumerate actual cells (block > row > cell) — descendant queries would
+  // see each cell twice once aem.js wraps bare text in <p>.
+  const copyCells = [...copy.children].flatMap((row) => [...row.children]);
   copyCells.forEach((cell, i) => {
     const text = cell.textContent.trim();
     if (isPlainUrl(text) && !cell.querySelector('a')) {

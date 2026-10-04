@@ -35,7 +35,12 @@ describe('hero block', () => {
 
   it('wraps site-relative path cells as CTA anchors', () => {
     const el = document.createElement('div');
-    el.innerHTML = '<picture><img src="/h.jpg"></picture><p>Copy</p><div>/research-overview</div><div>Our research</div>';
+    el.innerHTML = `<div>
+      <div><picture><img src="/h.jpg"></picture></div>
+      <div><p>Copy</p></div>
+      <div><p>/research-overview</p></div>
+      <div><p>Our research</p></div>
+    </div>`;
     const block = buildHeroBlock(el);
     const a = block.querySelector('.hero-copy a[href="/research-overview"]');
     expect(a).toBeTruthy();
